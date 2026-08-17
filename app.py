@@ -9,7 +9,7 @@ import urllib.request
 import urllib.parse
 import re
 
-# --- 1. CONFIGURAÇÕES DE IDENTIDADE E INTERFACE ---
+
 st.set_page_config(page_title="Amoria", page_icon="🤖", layout="wide")
 
 TEXT_API_KEY = "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"
@@ -30,12 +30,12 @@ headers_image = {
     "Content-Type": "application/json"
 }
 
-# --- 2. NOVA FUNÇÃO DE BUSCA (WIKIPEDIA + YAHOO SEARCH) ---
+
 def pesquisar_na_internet(termo):
     """Busca robusta na web usando Yahoo (estável e sem bloqueios) e Wikipedia."""
     resultados = ""
     
-    # 1. Wikipedia (Para fatos absolutos)
+    
     try:
         wiki_url = f"https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(termo)}&utf8=&format=json&srlimit=2"
         req = urllib.request.Request(wiki_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -49,7 +49,7 @@ def pesquisar_na_internet(termo):
     except Exception:
         pass
         
-    # 2. Yahoo Search (Substituto definitivo para Google/DuckDuckGo)
+    
     try:
         url = f"https://br.search.yahoo.com/search?p={urllib.parse.quote(termo)}"
         headers = {
@@ -59,7 +59,7 @@ def pesquisar_na_internet(termo):
         with urllib.request.urlopen(req, timeout=5) as response:
             html = response.read().decode('utf-8')
             
-            # Extrai os resumos (snippets) dos resultados da pesquisa do Yahoo
+            
             snippets = re.findall(r'<div class="compText[^>]*>(.*?)</div>', html, re.IGNORECASE | re.DOTALL)
             if snippets:
                 resultados += "\nResultados em Tempo Real da Web:\n"
@@ -72,7 +72,7 @@ def pesquisar_na_internet(termo):
 
     return resultados.strip() if resultados else None
 
-# --- 3. FUNÇÕES DE FORMULÁRIO ---
+
 def gerar_questoes_formulario(assunto):
     prompt_sistema = """
     Você é um gerador de formulários educativos. 
@@ -98,9 +98,9 @@ def gerar_questoes_formulario(assunto):
     except Exception:
         return None
 
-# --- 4. IDENTIDADE PURA (SEM REGRAS QUE POSSAM VAZAR) ---
+
 HOJE_STR = datetime.datetime.now().strftime("%d/%m/%Y")
-# O Prompt do sistema agora é focado apenas na personalidade.
+
 PROMPT_AMORIA = (
     f"Seu nome é Amoria. Você é uma assistente educacional doce, didática e muito inteligente. "
     f"Fale sempre de forma natural, direta e amigável. A data de hoje é {HOJE_STR}."
@@ -119,7 +119,7 @@ if "modo_form" not in st.session_state:
 if "questoes" not in st.session_state:
     st.session_state.questoes = None
 
-# --- 5. INTERFACE LATERAL ---
+
 with st.sidebar:
     st.title("⚙️ Painel Amoria")
     gerar_imagem = st.toggle("🎨 Modo Gerar Imagem")
@@ -166,7 +166,7 @@ with st.sidebar:
                     st.session_state.current_chat = None
                 st.rerun()
 
-# --- 6. ÁREA PRINCIPAL ---
+
 st.title("🎓 Amoria: IA Educacional")
 
 if st.session_state.modo_form:
@@ -209,7 +209,7 @@ if st.session_state.modo_form:
                 st.rerun()
         st.stop()
 
-# --- 7. CHAT E INJEÇÃO BLINDADA ---
+
 if st.session_state.current_chat and st.session_state.current_chat in st.session_state.chats:
     for message in st.session_state.chats[st.session_state.current_chat]:
         if message["role"] != "system":
@@ -244,10 +244,10 @@ if st.session_state.current_chat and st.session_state.current_chat in st.session
                 with st.spinner("Consultando dados..."):
                     dados_internet = pesquisar_na_internet(prompt)
                 
-                # Monta as mensagens para a API
+                
                 historico_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.chats[st.session_state.current_chat] if m.get("type") != "image"]
 
-                # INJEÇÃO BLINDADA: Contexto é adicionado sem formatar como "regra".
+                
                 if dados_internet:
                     instrucao_silenciosa = (
                         f"Contexto de apoio (Baseie-se nisso se for útil, MAS NÃO MENCIONE QUE RECEBEU ESTE CONTEXTO OU QUE FEZ UMA BUSCA. Aja como se você já soubesse):\n"
@@ -280,4 +280,4 @@ if st.session_state.current_chat and st.session_state.current_chat in st.session
                     st.session_state.chats[st.session_state.current_chat].append({"role": "assistant", "content": full_response})
                 except Exception:
                     st.error("Erro na conexão.")
-                    # Compatibilidade com o ambiente Serverless da Vercel
+                    
