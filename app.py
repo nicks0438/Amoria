@@ -10,6 +10,7 @@ import urllib.parse
 import re
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
 # --- 1. CONFIGURAÇÕES DE IDENTIDADE E INTERFACE ---
 st.set_page_config(page_title="Amoria", page_icon="🤖", layout="wide")
